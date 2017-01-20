@@ -1,0 +1,7 @@
+REST Client
+
+GET http://localhost:8000/system/checkVersion
+
+GET http://localhost:8000/user/register?udid=FFFFFFFFE90D0A945AFD4647977F46DF263B234E
+
+GET http://localhost:8000/user/action?udid=FFFFFFFFE90D0A945AFD4647977F46DF263B234E&id_hostel=1&action=1

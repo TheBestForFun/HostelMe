@@ -1,0 +1,57 @@
+CREATE DATABASE IF NOT EXISTS Hostel CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE Hostel;
+CREATE TABLE IF NOT EXISTS hostel(
+    id_hostel INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    address TEXT NOT NULL, 
+    name TEXT NOT NULL, 
+	site TEXT,
+    longitude DOUBLE NOT NULL, 
+    latitude DOUBLE NOT NULL, 
+    date_add DATETIME, 
+    date_update DATETIME);
+
+CREATE TABLE IF NOT EXISTS hostel2metro(
+    id_hostel2metro INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    id_hostel INT NOT NULL, 
+    id_metro INT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS hostel2phone(
+    id_hostel2phone INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    id_hostel INT NOT NULL, 
+    id_phone INT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS metro(
+    id_metro INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    name TEXT NOT NULL, 
+    longitude DOUBLE NOT NULL, 
+    latitude DOUBLE NOT NULL);
+
+CREATE TABLE IF NOT EXISTS phone(
+    id_phone INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    phone TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS result(
+    id_result INT NOT NULL, 
+    description TEXT NOT NULL);
+
+CREATE TABLE IF NOT EXISTS settings(
+    db_version TEXT NOT NULL, 
+    last_update_date DATETIME NOT NULL);
+
+CREATE TABLE IF NOT EXISTS user_test(
+    id_user_test INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+    date_test DATETIME NOT NULL, 
+    result INT NOT NULL, 
+    udid TEXT NOT NULL, 
+    id_hostel INT NOT NULL);
+	
+CREATE USER if not exists 'user'@'localhost' IDENTIFIED BY 'user';
+GRANT SELECT ON hostel.*		TO 'user'@'localhost';
+GRANT SELECT ON hostel2metro.*  TO 'user'@'localhost';
+GRANT SELECT ON hostel2phone.*  TO 'user'@'localhost';
+GRANT SELECT ON metro.*         TO 'user'@'localhost';
+GRANT SELECT ON phone.*         TO 'user'@'localhost';
+GRANT SELECT ON settings.*      TO 'user'@'localhost';
+GRANT SELECT ON result.*        TO 'user'@'localhost';
+GRANT SELECT ON user_test.*		TO 'user'@'localhost';
+GRANT insert ON user_test.*		TO 'user'@'localhost';
