@@ -1,0 +1,8 @@
+client/packages/
+client/HostelMe/HostelMe.iOS/obj/
+client/HostelMe/HostelMe.Droid/obj/
+client/HostelMe/HostelMe.iOS/bin/
+client/HostelMe/HostelMe.Droid/bin/
+client/HostelMe/HostelMe/obj/
+client/HostelMe/HostelMe/bin/
+client/.vs/HostelMe/v14/.suo
