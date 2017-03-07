@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using Xamarin.Forms;
 
@@ -13,6 +14,14 @@ namespace HostelMe
         {
             // The root page of your application
             MainPage = new MainPageHostelMe();
+
+            //while not do, emulation loading content
+            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+            {
+                MainPage = new MapPage();
+                return false;
+            });
+
         }
 
         protected override void OnStart()

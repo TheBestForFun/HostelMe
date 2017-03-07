@@ -1,0 +1,5 @@
+https://developer.xamarin.com/guides/android/platform_features/maps_and_location/maps/obtaining_a_google_maps_api_key/
+
+c:\Program Files\Java\jdk1.8.0_121\bin>keytool -list -v -keystore "c:\Users\konkov\AppData\Local\Xamarin\Mono for Android\debug.keystore" -alias androiddebugkey -storepass android -keypass android 
+
+9C:46:D2:9C:17:03:10:59:67:D0:27:63:47:4B:50:EA:A3:EE:3C:C9
