@@ -25,26 +25,28 @@ const (
 	res_registr = 0
 )
 
-type Tables struct {
-	Tables []interface{} `json:"tables"`
+type Tables struct { // here json and table name a the same
+	Hostel       Hostel       `json:"hostel"`
+	Phone        Phone        `json:"phone"`
+	Metro        Metro        `json:"metro"`
+	Hostel2Metro Hostel2Metro `json:"hostel2metro"`
+	Hostel2Phone Hostel2Phone `json:"hostel2phone"`
 }
 
-func (ts *Tables) append(name string) error {
-	table, err := createTable(name)
-	ts.Tables = append(ts.Tables, table)
-	return err
-}
-
-func (ts *Tables) appendFew(names []string) error {
-	var err error
-	for _, name := range names {
-		err = ts.append(name)
+func (ts *Tables) fill() error {
+	tables := reflect.ValueOf(ts).Elem()
+	for i := 0; i < tables.NumField(); i++ {
+		table, err := createTable(tables.Field(i), tables.Type().Field(i))
+		if err != nil {
+			panic(err)
+		}
+		tables.Field(i).Set(reflect.ValueOf(table))
 	}
-	return err
+	return nil
 }
 
 type Hostel struct {
-	Items []HostelItem `json:"hostel"`
+	Items []HostelItem `json:"hostelItems"`
 }
 
 type HostelItem struct {
@@ -59,7 +61,7 @@ type HostelItem struct {
 }
 
 type Phone struct {
-	Items []PhoneItem `json:"phone"`
+	Items []PhoneItem `json:"phoneItems"`
 }
 
 type PhoneItem struct {
@@ -68,7 +70,7 @@ type PhoneItem struct {
 }
 
 type Hostel2Metro struct {
-	Items []Hostel2MetroItem `json:"hostel2metro"`
+	Items []Hostel2MetroItem `json:"hostel2metroItems"`
 }
 
 type Hostel2MetroItem struct {
@@ -78,7 +80,7 @@ type Hostel2MetroItem struct {
 }
 
 type Hostel2Phone struct {
-	Items []Hostel2PhoneItem `json:"hostel2phone"`
+	Items []Hostel2PhoneItem `json:"hostel2phoneItems"`
 }
 
 type Hostel2PhoneItem struct {
@@ -88,7 +90,7 @@ type Hostel2PhoneItem struct {
 }
 
 type Metro struct {
-	Items []MetroItem `json:"metro"`
+	Items []MetroItem `json:"metroItems"`
 }
 
 type MetroItem struct {
@@ -107,24 +109,13 @@ func Parse(table interface{}, data map[string]string) {
 	}
 }
 
-func getProtatype(name string) interface{} {
-	tableMap := map[string]interface{}{
-		"hostel":       Hostel{},
-		"phone":        Phone{},
-		"hostel2metro": Hostel2Metro{},
-		"hostel2phone": Hostel2Phone{},
-		"metro":        Metro{}}
-
-	return tableMap[name]
-}
-
-func createTable(name string) (interface{}, error) {
-	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", name))
+func createTable(tableValue reflect.Value, tableType reflect.StructField) (interface{}, error) {
+	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", tableType.Tag.Get("json")))
 	if err != nil {
 		return nil, err
 	}
 
-	result := reflect.New(reflect.TypeOf(getProtatype(name))).Elem()
+	result := reflect.New(tableValue.Type()).Elem()
 	s := result.FieldByName("Items")
 
 	rowItem := reflect.New(s.Type().Elem()).Interface()
@@ -161,7 +152,7 @@ func CloseDB() {
 func GetHostelDB() (string, error) {
 
 	var tables Tables
-	tables.appendFew([]string{"hostel", "phone", "hostel2metro", "hostel2phone", "metro"})
+	tables.fill()
 
 	jsonData, err := json.Marshal(tables)
 	if err != nil {
@@ -196,7 +187,6 @@ func Register(udid string) error {
 	}
 	return nil
 }
-
 func HostelAction(udid, hostel, action string) error {
 	_sql := fmt.Sprintf("INSERT INTO %s (udid, result, id_hostel) VALUES('%s', '%s', '%s');", table_user_test, udid, action, hostel)
 	fmt.Println(_sql)
