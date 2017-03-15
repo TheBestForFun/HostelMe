@@ -4,6 +4,7 @@ USE Hostel;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
+
 --
 -- База данных: `hostel`
 --
@@ -251,5 +252,6 @@ ALTER TABLE `phone`
 ALTER TABLE `user_test`
   MODIFY `id_user_test` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
-  CREATE USER if not exists 'user'@'localhost' IDENTIFIED BY 'user';
+CREATE USER if not exists 'user'@'localhost' IDENTIFIED BY 'user';
 GRANT ALL PRIVILEGES ON hostel.*		TO 'user'@'localhost' WITH GRANT OPTION;
+

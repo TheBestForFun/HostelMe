@@ -3,12 +3,12 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-
 	"reflect"
 
-	"github.com/jmoiron/sqlx"
+	"user/hostel/utils"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" //driver db
+	"github.com/jmoiron/sqlx"
 )
 
 var (
@@ -16,27 +16,43 @@ var (
 )
 
 const (
-	table_settings  = "settings"
-	table_user_test = "user_test"
+	dbDriver    = "mysql"
+	dbLoginPass = "user:user@/Hostel"
 
-	db_version       = "db_version"
-	last_update_date = "last_update_date"
+	tableVersion  = "version"
+	tableUserTest = "user_test"
+	hostelView    = "hostel_view"
 
-	res_registr = 0
+	fieldDbVersion         = "db_version"
+	fieldHostelDateUpdate  = "h_date_update"
+	fieldVersionDateUpdate = "date_update"
+
+	flagRegistrated = 0
+
+	dbReq           = "SELECT %s FROM %s"
+	dbReqWhere      = " where %s > '%s'"
+	dbRewGetVerDate = "SELECT %s FROM %s WHERE %s = '%s';"
+	dbRewGetVer     = "SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;"
+
+	dbReqRegisteration = "INSERT INTO %s (udid, result) VALUES('%s', '%d');"
+	dbReqAction        = "INSERT INTO %s (udid, result, id_hostel) VALUES('%s', '%s', '%s');"
+
+	tagSQLFields    = "sql"
+	structFieldItem = "Items"
 )
 
-type Tables struct { // here json and table name a the same
-	Hostel       Hostel       `json:"hostel"`
-	Phone        Phone        `json:"phone"`
-	Metro        Metro        `json:"metro"`
-	Hostel2Metro Hostel2Metro `json:"hostel2metro"`
-	Hostel2Phone Hostel2Phone `json:"hostel2phone"`
+type Tables struct {
+	Hostel       Hostel       `json:"hostel" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
+	Phone        Phone        `json:"phone" sql:"id_phone, phone"`
+	Metro        Metro        `json:"metro" sql:"id_metro, m_name, m_longitude, m_latitude"`
+	Hostel2Metro Hostel2Metro `json:"hostel2metro" sql:"id_hostel2metro, id_hostel, id_metro"`
+	Hostel2Phone Hostel2Phone `json:"hostel2phone" sql:"id_hostel2phone, id_hostel, id_phone"`
 }
 
-func (ts *Tables) fill() error {
+func (ts *Tables) fill(ver string) error {
 	tables := reflect.ValueOf(ts).Elem()
 	for i := 0; i < tables.NumField(); i++ {
-		table, err := createTable(tables.Field(i), tables.Type().Field(i))
+		table, err := createTable(tables.Field(i), tables.Type().Field(i), ver)
 		if err != nil {
 			panic(err)
 		}
@@ -51,12 +67,12 @@ type Hostel struct {
 
 type HostelItem struct {
 	Address    string  `db:"address" json:"address"`
-	DateAdd    string  `db:"date_add" json:"date_add"`
-	DateUpdate string  `db:"date_update" json:"date_update"`
+	DateAdd    string  `db:"h_date_add" json:"h_date_add"`
+	DateUpdate string  `db:"h_date_update" json:"h_date_update"`
 	IDdHostel  uint    `db:"id_hostel" json:"id_hostel"`
-	Latitude   float64 `db:"latitude" json:"latitude"`
-	Longitude  float64 `db:"longitude" json:"longitude"`
-	Name       string  `db:"name" json:"name"`
+	Latitude   float64 `db:"h_latitude" json:"h_latitude"`
+	Longitude  float64 `db:"h_longitude" json:"h_longitude"`
+	Name       string  `db:"h_name" json:"h_name"`
 	Site       string  `db:"site" json:"site"`
 }
 
@@ -95,9 +111,9 @@ type Metro struct {
 
 type MetroItem struct {
 	IDMetro   uint    `db:"id_metro" json:"id_metro"`
-	Latitude  float64 `db:"latitude" json:"latitude"`
-	Longitude float64 `db:"longitude" json:"longitude"`
-	Name      string  `db:"name" json:"name"`
+	Latitude  float64 `db:"m_latitude" json:"m_latitude"`
+	Longitude float64 `db:"m_longitude" json:"m_longitude"`
+	Name      string  `db:"m_name" json:"m_name"`
 }
 
 type TableRow map[string]string
@@ -105,27 +121,31 @@ type TableRow map[string]string
 func Parse(table interface{}, data map[string]string) {
 	mapB, _ := json.Marshal(data)
 	if err := json.Unmarshal(mapB, &table); err != nil {
-		panic(err)
+		utils.Error(err)
 	}
 }
 
-func createTable(tableValue reflect.Value, tableType reflect.StructField) (interface{}, error) {
-	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", tableType.Tag.Get("json")))
+func createTable(tableValue reflect.Value, tableType reflect.StructField, ver string) (interface{}, error) {
+	date := GetVersionDate(ver)
+	var where string
+	if date != "" {
+		where = fmt.Sprintf(dbReqWhere, fieldHostelDateUpdate, date)
+	}
+
+	rows, err := db.Queryx(fmt.Sprintf(dbReq, tableType.Tag.Get(tagSQLFields), hostelView) + where)
 	if err != nil {
 		return nil, err
 	}
 
 	result := reflect.New(tableValue.Type()).Elem()
-	s := result.FieldByName("Items")
-
+	s := result.FieldByName(structFieldItem)
 	rowItem := reflect.New(s.Type().Elem()).Interface()
 
 	for rows.Next() {
 		err = rows.StructScan(rowItem)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-
 		s.Set(reflect.Append(s, reflect.ValueOf(rowItem).Elem()))
 	}
 	return result.Interface(), nil
@@ -133,7 +153,7 @@ func createTable(tableValue reflect.Value, tableType reflect.StructField) (inter
 
 func OpenDB() error {
 	var err error
-	db, err = sqlx.Open("mysql", "user:user@/Hostel")
+	db, err = sqlx.Open(dbDriver, dbLoginPass)
 	if err != nil {
 		return err
 	}
@@ -149,10 +169,10 @@ func CloseDB() {
 	db.Close()
 }
 
-func GetHostelDB() (string, error) {
+func GetHostelDB(ver string) (string, error) {
 
 	var tables Tables
-	tables.fill()
+	tables.fill(ver)
 
 	jsonData, err := json.Marshal(tables)
 	if err != nil {
@@ -161,10 +181,31 @@ func GetHostelDB() (string, error) {
 	return string(jsonData), nil
 }
 
-func GetHostelVersion() string {
-	rows, err := db.Query(fmt.Sprintf("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;", db_version, table_settings, last_update_date))
+func GetVersionDate(ver string) string {
+	if ver == "" {
+		return ""
+	}
+
+	rows, err := db.Query(fmt.Sprintf(dbRewGetVerDate, fieldVersionDateUpdate, tableVersion, fieldDbVersion, ver))
 	if err != nil {
-		fmt.Println(err.Error())
+		utils.Error(err.Error())
+		return ""
+	}
+
+	rows.Next()
+	var date string
+	err = rows.Scan(&date)
+	if err != nil {
+		utils.Error(err.Error())
+		return ""
+	}
+	return date
+}
+
+func GetCurrentVersionDB() string {
+	rows, err := db.Query(fmt.Sprintf(dbRewGetVer, fieldDbVersion, tableVersion, fieldVersionDateUpdate))
+	if err != nil {
+		utils.Error(err.Error())
 		return ""
 	}
 
@@ -172,27 +213,25 @@ func GetHostelVersion() string {
 	var ver string
 	err = rows.Scan(&ver)
 	if err != nil {
-		fmt.Println(err.Error())
+		utils.Error(err.Error())
 		return ""
 	}
 	return ver
 
 }
 func Register(udid string) error {
-	_sql := fmt.Sprintf("INSERT INTO %s (udid, result) VALUES('%s', '%d');", table_user_test, udid, res_registr)
-	fmt.Println(_sql)
+	_sql := fmt.Sprintf(dbReqRegisteration, tableUserTest, udid, flagRegistrated)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		fmt.Println(err.Error())
+		utils.Error(err.Error())
 	}
 	return nil
 }
-func HostelAction(udid, hostel, action string) error {
-	_sql := fmt.Sprintf("INSERT INTO %s (udid, result, id_hostel) VALUES('%s', '%s', '%s');", table_user_test, udid, action, hostel)
-	fmt.Println(_sql)
+func ClientAction(udid, hostel, action string) error {
+	_sql := fmt.Sprintf(dbReqAction, tableUserTest, udid, action, hostel)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		fmt.Println(err.Error())
+		utils.Error(err.Error())
 	}
 	return nil
 }

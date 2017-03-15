@@ -1,0 +1,25 @@
+Requests:
+
+
+1. Get last version db:
+    /system/version 
+
+2. Get db tables:
+    /system/db[?ver={clientVersion}] 
+
+    a. /system/db - return all client tables
+
+    b. /system/db[?ver={clienVersion}] - return all tabels after version "ver"
+    Ex: /system/db?ver=0.1
+
+    Note:
+    If version not valid, request is eqaul to /system/db
+
+3. Reqister new client:
+    /client/register?udid={clientUDID}
+
+    Ex: /client/register?udid=FFFFFFFFE90D0A945AFD4647977F46DF263B234E
+
+4. Save client actions:
+    /client/action?udid={clientUDID}&action={clientAction}&id_hostel={hostelID}
+    Ex: /client/action?udid=FFFFFFFFE90D0A945AFD4647977F46DF263B234E&action=0&id_hostel=0

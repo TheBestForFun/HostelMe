@@ -1,14 +1,15 @@
 CREATE DATABASE IF NOT EXISTS Hostel CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE Hostel;
+
 CREATE TABLE IF NOT EXISTS hostel(
     id_hostel INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
     address TEXT NOT NULL, 
-    name TEXT NOT NULL, 
+    h_name TEXT NOT NULL, 
 	site TEXT,
-    longitude DOUBLE NOT NULL, 
-    latitude DOUBLE NOT NULL, 
-    date_add DATETIME, 
-    date_update DATETIME);
+    h_longitude DOUBLE NOT NULL, 
+    h_latitude DOUBLE NOT NULL, 
+    h_date_add DATETIME CURRENT_TIMESTAMP, 
+    h_date_update DATETIME CURRENT_TIMESTAMP);
 
 CREATE TABLE IF NOT EXISTS hostel2metro(
     id_hostel2metro INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
@@ -22,9 +23,9 @@ CREATE TABLE IF NOT EXISTS hostel2phone(
 
 CREATE TABLE IF NOT EXISTS metro(
     id_metro INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
-    name TEXT NOT NULL, 
-    longitude DOUBLE NOT NULL, 
-    latitude DOUBLE NOT NULL);
+    m_name TEXT NOT NULL, 
+    m_longitude DOUBLE NOT NULL, 
+    m_latitude DOUBLE NOT NULL);
 
 CREATE TABLE IF NOT EXISTS phone(
     id_phone INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
@@ -34,9 +35,10 @@ CREATE TABLE IF NOT EXISTS result(
     id_result INT NOT NULL, 
     description TEXT NOT NULL);
 
-CREATE TABLE IF NOT EXISTS settings(
+CREATE TABLE IF NOT EXISTS version(
+	id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
     db_version TEXT NOT NULL, 
-    last_update_date DATETIME NOT NULL);
+    date_update DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
 
 CREATE TABLE IF NOT EXISTS user_test(
     id_user_test INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
@@ -46,12 +48,4 @@ CREATE TABLE IF NOT EXISTS user_test(
     id_hostel INT NOT NULL);
 	
 CREATE USER if not exists 'user'@'localhost' IDENTIFIED BY 'user';
-GRANT SELECT ON hostel.*		TO 'user'@'localhost';
-GRANT SELECT ON hostel2metro.*  TO 'user'@'localhost';
-GRANT SELECT ON hostel2phone.*  TO 'user'@'localhost';
-GRANT SELECT ON metro.*         TO 'user'@'localhost';
-GRANT SELECT ON phone.*         TO 'user'@'localhost';
-GRANT SELECT ON settings.*      TO 'user'@'localhost';
-GRANT SELECT ON result.*        TO 'user'@'localhost';
-GRANT SELECT ON user_test.*		TO 'user'@'localhost';
-GRANT insert ON user_test.*		TO 'user'@'localhost';
+GRANT ALL PRIVILEGES ON hostel.*		TO 'user'@'localhost' WITH GRANT OPTION;
