@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"user/hostel/utils"
-
 	_ "github.com/go-sql-driver/mysql" //driver db
 	"github.com/jmoiron/sqlx"
 )
@@ -121,7 +119,7 @@ type TableRow map[string]string
 func Parse(table interface{}, data map[string]string) {
 	mapB, _ := json.Marshal(data)
 	if err := json.Unmarshal(mapB, &table); err != nil {
-		utils.Error(err)
+		Error(err.Error())
 	}
 }
 
@@ -188,7 +186,7 @@ func GetVersionDate(ver string) string {
 
 	rows, err := db.Query(fmt.Sprintf(dbRewGetVerDate, fieldVersionDateUpdate, tableVersion, fieldDbVersion, ver))
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 		return ""
 	}
 
@@ -196,7 +194,7 @@ func GetVersionDate(ver string) string {
 	var date string
 	err = rows.Scan(&date)
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 		return ""
 	}
 	return date
@@ -205,7 +203,7 @@ func GetVersionDate(ver string) string {
 func GetCurrentVersionDB() string {
 	rows, err := db.Query(fmt.Sprintf(dbRewGetVer, fieldDbVersion, tableVersion, fieldVersionDateUpdate))
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 		return ""
 	}
 
@@ -213,7 +211,7 @@ func GetCurrentVersionDB() string {
 	var ver string
 	err = rows.Scan(&ver)
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 		return ""
 	}
 	return ver
@@ -223,7 +221,7 @@ func Register(udid string) error {
 	_sql := fmt.Sprintf(dbReqRegisteration, tableUserTest, udid, flagRegistrated)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 	}
 	return nil
 }
@@ -231,7 +229,7 @@ func ClientAction(udid, hostel, action string) error {
 	_sql := fmt.Sprintf(dbReqAction, tableUserTest, udid, action, hostel)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		utils.Error(err.Error())
+		Error(err.Error())
 	}
 	return nil
 }
