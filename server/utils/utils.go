@@ -11,5 +11,5 @@ func Error(str string) {
 
 // Info print message string str in console
 func Info(str string) {
-	fmt.Printf("[I] %s]\n", str)
+	fmt.Printf("[I] %s\n", str)
 }

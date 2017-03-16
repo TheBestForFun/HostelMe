@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -35,35 +36,18 @@ const (
 	dbReqRegisteration = "INSERT INTO %s (udid, result) VALUES('%s', '%d');"
 	dbReqAction        = "INSERT INTO %s (udid, result, id_hostel) VALUES('%s', '%s', '%s');"
 
-	tagSQLFields    = "sql"
-	structFieldItem = "Items"
+	tagSQLFields = "sql"
 )
 
 type Tables struct {
-	Hostel       Hostel       `json:"hostel" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
-	Phone        Phone        `json:"phone" sql:"id_phone, phone"`
-	Metro        Metro        `json:"metro" sql:"id_metro, m_name, m_longitude, m_latitude"`
-	Hostel2Metro Hostel2Metro `json:"hostel2metro" sql:"id_hostel2metro, id_hostel, id_metro"`
-	Hostel2Phone Hostel2Phone `json:"hostel2phone" sql:"id_hostel2phone, id_hostel, id_phone"`
-}
-
-func (ts *Tables) fill(ver string) error {
-	tables := reflect.ValueOf(ts).Elem()
-	for i := 0; i < tables.NumField(); i++ {
-		table, err := createTable(tables.Field(i), tables.Type().Field(i), ver)
-		if err != nil {
-			panic(err)
-		}
-		tables.Field(i).Set(reflect.ValueOf(table))
-	}
-	return nil
+	Hostels       []Hostel       `json:"hostels, omitempty" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
+	Phones        []Phone        `json:"phones, omitempty" sql:"id_phone, phone"`
+	Metros        []Metro        `json:"metros, omitempty" sql:"id_metro, m_name, m_longitude, m_latitude"`
+	Hostel2Metros []Hostel2Metro `json:"hostel2metros, omitempty" sql:"id_hostel2metro, id_hostel, id_metro"`
+	Hostel2Phones []Hostel2Phone `json:"hostel2phones, omitempty" sql:"id_hostel2phone, id_hostel, id_phone"`
 }
 
 type Hostel struct {
-	Items []HostelItem `json:"hostelItems"`
-}
-
-type HostelItem struct {
 	Address    string  `db:"address" json:"address"`
 	DateAdd    string  `db:"h_date_add" json:"h_date_add"`
 	DateUpdate string  `db:"h_date_update" json:"h_date_update"`
@@ -75,39 +59,23 @@ type HostelItem struct {
 }
 
 type Phone struct {
-	Items []PhoneItem `json:"phoneItems"`
-}
-
-type PhoneItem struct {
 	IDdPhone uint   `db:"id_phone" json:"id_phone"`
 	Phone    string `db:"phone" json:"phone"`
 }
 
 type Hostel2Metro struct {
-	Items []Hostel2MetroItem `json:"hostel2metroItems"`
-}
-
-type Hostel2MetroItem struct {
 	IDHostel      uint `db:"id_hostel" json:"id_hostel"`
 	IDHoste2Metro uint `db:"id_hostel2metro" json:"id_hostel2metro"`
 	IDdMetro      uint `db:"id_metro" json:"id_metro"`
 }
 
 type Hostel2Phone struct {
-	Items []Hostel2PhoneItem `json:"hostel2phoneItems"`
-}
-
-type Hostel2PhoneItem struct {
 	IDHostel      uint `db:"id_hostel" json:"id_hostel"`
 	IDHoste2Phone uint `db:"id_hostel2phone" json:"id_hostel2phone"`
 	IDPhone       uint `db:"id_phone" json:"id_phone"`
 }
 
 type Metro struct {
-	Items []MetroItem `json:"metroItems"`
-}
-
-type MetroItem struct {
 	IDMetro   uint    `db:"id_metro" json:"id_metro"`
 	Latitude  float64 `db:"m_latitude" json:"m_latitude"`
 	Longitude float64 `db:"m_longitude" json:"m_longitude"`
@@ -116,15 +84,21 @@ type MetroItem struct {
 
 type TableRow map[string]string
 
-func Parse(table interface{}, data map[string]string) {
-	mapB, _ := json.Marshal(data)
-	if err := json.Unmarshal(mapB, &table); err != nil {
-		Error(err.Error())
+func (ts *Tables) fill(ver string) error {
+	tables := reflect.ValueOf(ts).Elem()
+	for i := 0; i < tables.NumField(); i++ {
+		table, err := createTable(tables.Field(i), tables.Type().Field(i), ver)
+		if err != nil {
+			return err
+		} else {
+			tables.Field(i).Set(reflect.ValueOf(table))
+		}
 	}
+	return nil
 }
 
 func createTable(tableValue reflect.Value, tableType reflect.StructField, ver string) (interface{}, error) {
-	date := GetVersionDate(ver)
+	date, err := GetVersionDate(ver)
 	var where string
 	if date != "" {
 		where = fmt.Sprintf(dbReqWhere, fieldHostelDateUpdate, date)
@@ -136,15 +110,13 @@ func createTable(tableValue reflect.Value, tableType reflect.StructField, ver st
 	}
 
 	result := reflect.New(tableValue.Type()).Elem()
-	s := result.FieldByName(structFieldItem)
-	rowItem := reflect.New(s.Type().Elem()).Interface()
-
+	rowItem := reflect.New(tableValue.Type().Elem()).Interface()
 	for rows.Next() {
 		err = rows.StructScan(rowItem)
 		if err != nil {
 			return nil, err
 		}
-		s.Set(reflect.Append(s, reflect.ValueOf(rowItem).Elem()))
+		result.Set(reflect.Append(result, reflect.ValueOf(rowItem).Elem()))
 	}
 	return result.Interface(), nil
 }
@@ -170,8 +142,10 @@ func CloseDB() {
 func GetHostelDB(ver string) (string, error) {
 
 	var tables Tables
-	tables.fill(ver)
-
+	err := tables.fill(ver)
+	if err != nil {
+		return "", err
+	}
 	jsonData, err := json.Marshal(tables)
 	if err != nil {
 		return "", err
@@ -179,49 +153,45 @@ func GetHostelDB(ver string) (string, error) {
 	return string(jsonData), nil
 }
 
-func GetVersionDate(ver string) string {
+func GetVersionDate(ver string) (string, error) {
 	if ver == "" {
-		return ""
+		return "", errors.New("version is empty")
 	}
 
 	rows, err := db.Query(fmt.Sprintf(dbRewGetVerDate, fieldVersionDateUpdate, tableVersion, fieldDbVersion, ver))
 	if err != nil {
-		Error(err.Error())
-		return ""
+		return "", err
 	}
 
 	rows.Next()
 	var date string
 	err = rows.Scan(&date)
 	if err != nil {
-		Error(err.Error())
-		return ""
+		return "", err
 	}
-	return date
+	return date, nil
 }
 
-func GetCurrentVersionDB() string {
+func GetCurrentVersionDB() (string, error) {
 	rows, err := db.Query(fmt.Sprintf(dbRewGetVer, fieldDbVersion, tableVersion, fieldVersionDateUpdate))
 	if err != nil {
-		Error(err.Error())
-		return ""
+		return "", err
 	}
 
 	rows.Next()
 	var ver string
 	err = rows.Scan(&ver)
 	if err != nil {
-		Error(err.Error())
-		return ""
+		return "", err
 	}
-	return ver
+	return ver, nil
 
 }
 func Register(udid string) error {
 	_sql := fmt.Sprintf(dbReqRegisteration, tableUserTest, udid, flagRegistrated)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		Error(err.Error())
+		return err
 	}
 	return nil
 }
@@ -229,7 +199,7 @@ func ClientAction(udid, hostel, action string) error {
 	_sql := fmt.Sprintf(dbReqAction, tableUserTest, udid, action, hostel)
 	_, err := db.Exec(_sql)
 	if err != nil {
-		Error(err.Error())
+		return err
 	}
 	return nil
 }
