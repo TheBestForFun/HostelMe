@@ -3,5 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"           
              x:Class="HostelMe.MainPageHostelMe"            
              BackgroundImage="@drawable/hostelme.png">
-  <Label Text="Loading..." VerticalOptions="Center" HorizontalOptions="Center" />
+    <StackLayout Orientation="Vertical">
+        <Button Text="test" FontSize="Medium" BorderWidth="1" HorizontalOptions="Center" VerticalOptions="Center" Clicked="OnTestClicked"/>
+        <Label x:Name="restStr" Text="Loading..." VerticalOptions="Center" HorizontalOptions="Center" />
+    
+    
+        </StackLayout>
 </ContentPage>

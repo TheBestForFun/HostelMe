@@ -10,17 +10,21 @@ namespace HostelMe
 {
     public class App : Application
     {
+        public static RestApi RestService { get; private set; }
+        public static Model model = new Model();
+
         public App()
         {
             // The root page of your application
             MainPage = new MainPageHostelMe();
-
+            //MainPage.setModel(ref model);
+            RestService = new RestApi();
             //while not do, emulation loading content
-            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+         /*   Device.StartTimer(TimeSpan.FromSeconds(10), () =>
             {
                 MainPage = new MapPage();
                 return false;
-            });
+            });*/
 
         }
 

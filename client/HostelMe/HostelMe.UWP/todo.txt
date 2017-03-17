@@ -1,0 +1,3 @@
+http://arteksoftware.com/adding-a-windows-phone-project-to-an-existing-xamarin-forms-solution/
+
+https://github.com/xamarin/xamarin-forms-samples/tree/master/Todo/Todo.UWP
