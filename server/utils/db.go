@@ -20,7 +20,6 @@ const (
 
 	tableVersion  = "version"
 	tableUserTest = "user_test"
-	hostelView    = "hostel_view"
 
 	fieldDbVersion         = "db_version"
 	fieldHostelDateUpdate  = "h_date_update"
@@ -38,14 +37,19 @@ const (
 
 	tagSQLFields  = "sql"
 	tagPrimaryKey = "primary"
+	tagTable      = "table"
 )
 
+// Exported tabels from DB
+// primary tag - primary index to exclude equal record
+// sql tag - fields to export
 type Tables struct {
-	Hostels       []Hostel       `json:"hostels, omitempty" primary:"IDHostel" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
-	Phones        []Phone        `json:"phones, omitempty" primary:"IDPhone" sql:"id_phone, phone"`
-	Metros        []Metro        `json:"metros, omitempty" primary:"IDMetro" sql:"id_metro, m_name, m_longitude, m_latitude"`
-	Hostel2Metros []Hostel2Metro `json:"hostel2metros, omitempty" primary:"IDHoste2Metro" sql:"id_hostel2metro, id_hostel, id_metro"`
-	Hostel2Phones []Hostel2Phone `json:"hostel2phones, omitempty" primary:"IDHoste2Phone" sql:"id_hostel2phone, id_hostel, id_phone"`
+	Hostels       []Hostel       `json:"hostels, omitempty" primary:"IDHostel" table:"hostel_view" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
+	Phones        []Phone        `json:"phones, omitempty" primary:"IDPhone" table:"hostel_view" sql:"id_phone, phone"`
+	Metros        []Metro        `json:"metros, omitempty" primary:"IDMetro" table:"hostel_view" sql:"id_metro, m_name, m_longitude, m_latitude"`
+	Hostel2Metros []Hostel2Metro `json:"hostel2metros, omitempty" primary:"IDHoste2Metro" table:"hostel_view" sql:"id_hostel2metro, id_hostel, id_metro"`
+	Hostel2Phones []Hostel2Phone `json:"hostel2phones, omitempty" primary:"IDHoste2Phone" table:"hostel_view" sql:"id_hostel2phone, id_hostel, id_phone"`
+	Versions      []Version      `json:"versions, omitempty" primary:"ID" table:"version" sql:"id, db_version, date_update"`
 }
 
 type Hostel struct {
@@ -83,6 +87,12 @@ type Metro struct {
 	Name      string  `db:"m_name" json:"m_name"`
 }
 
+type Version struct {
+	ID         uint   `db:"id" json:"id"`
+	DBVersion  string `db:"db_version" json:"db_version"`
+	DateUpdate string `db:"date_update" json:"date_update"`
+}
+
 type TableRow map[string]string
 
 func (ts *Tables) fill(ver string) error {
@@ -108,13 +118,21 @@ func contains(s []uint64, e uint64) bool {
 }
 
 func createTable(tableValue reflect.Value, tableType reflect.StructField, ver string) (interface{}, error) {
-	date, err := GetVersionDate(ver)
 	var where string
+
+	date, err := GetVersionDate(ver)
+
 	if date != "" {
-		where = fmt.Sprintf(dbReqWhere, fieldHostelDateUpdate, date)
+		field := fieldHostelDateUpdate
+		if tableType.Tag.Get(tagTable) == tableVersion {
+			field = fieldVersionDateUpdate
+		}
+		where = fmt.Sprintf(dbReqWhere, field, date)
 	}
 
-	rows, err := db.Queryx(fmt.Sprintf(dbReq, tableType.Tag.Get(tagSQLFields), hostelView) + where)
+	sql := fmt.Sprintf(dbReq, tableType.Tag.Get(tagSQLFields), tableType.Tag.Get(tagTable))
+
+	rows, err := db.Queryx(sql + where)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +148,6 @@ func createTable(tableValue reflect.Value, tableType reflect.StructField, ver st
 		// not include dublicate from view
 		key := reflect.ValueOf(rowItem).Elem().FieldByName(tableType.Tag.Get(tagPrimaryKey))
 		if contains(primaryKeys, key.Uint()) == false {
-			fmt.Println(key)
 			primaryKeys = append(primaryKeys, key.Uint())
 			result.Set(reflect.Append(result, reflect.ValueOf(rowItem).Elem()))
 		}
