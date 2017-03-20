@@ -36,22 +36,23 @@ const (
 	dbReqRegisteration = "INSERT INTO %s (udid, result) VALUES('%s', '%d');"
 	dbReqAction        = "INSERT INTO %s (udid, result, id_hostel) VALUES('%s', '%s', '%s');"
 
-	tagSQLFields = "sql"
+	tagSQLFields  = "sql"
+	tagPrimaryKey = "primary"
 )
 
 type Tables struct {
-	Hostels       []Hostel       `json:"hostels, omitempty" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
-	Phones        []Phone        `json:"phones, omitempty" sql:"id_phone, phone"`
-	Metros        []Metro        `json:"metros, omitempty" sql:"id_metro, m_name, m_longitude, m_latitude"`
-	Hostel2Metros []Hostel2Metro `json:"hostel2metros, omitempty" sql:"id_hostel2metro, id_hostel, id_metro"`
-	Hostel2Phones []Hostel2Phone `json:"hostel2phones, omitempty" sql:"id_hostel2phone, id_hostel, id_phone"`
+	Hostels       []Hostel       `json:"hostels, omitempty" primary:"IDHostel" sql:"id_hostel, address, h_name, site, h_latitude, h_longitude, h_date_add, h_date_update"`
+	Phones        []Phone        `json:"phones, omitempty" primary:"IDPhone" sql:"id_phone, phone"`
+	Metros        []Metro        `json:"metros, omitempty" primary:"IDMetro" sql:"id_metro, m_name, m_longitude, m_latitude"`
+	Hostel2Metros []Hostel2Metro `json:"hostel2metros, omitempty" primary:"IDHoste2Metro" sql:"id_hostel2metro, id_hostel, id_metro"`
+	Hostel2Phones []Hostel2Phone `json:"hostel2phones, omitempty" primary:"IDHoste2Phone" sql:"id_hostel2phone, id_hostel, id_phone"`
 }
 
 type Hostel struct {
 	Address    string  `db:"address" json:"address"`
 	DateAdd    string  `db:"h_date_add" json:"h_date_add"`
 	DateUpdate string  `db:"h_date_update" json:"h_date_update"`
-	IDdHostel  uint    `db:"id_hostel" json:"id_hostel"`
+	IDHostel   uint    `db:"id_hostel" json:"id_hostel"`
 	Latitude   float64 `db:"h_latitude" json:"h_latitude"`
 	Longitude  float64 `db:"h_longitude" json:"h_longitude"`
 	Name       string  `db:"h_name" json:"h_name"`
@@ -59,8 +60,8 @@ type Hostel struct {
 }
 
 type Phone struct {
-	IDdPhone uint   `db:"id_phone" json:"id_phone"`
-	Phone    string `db:"phone" json:"phone"`
+	IDPhone uint   `db:"id_phone" json:"id_phone"`
+	Phone   string `db:"phone" json:"phone"`
 }
 
 type Hostel2Metro struct {
@@ -97,6 +98,15 @@ func (ts *Tables) fill(ver string) error {
 	return nil
 }
 
+func contains(s []uint64, e uint64) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func createTable(tableValue reflect.Value, tableType reflect.StructField, ver string) (interface{}, error) {
 	date, err := GetVersionDate(ver)
 	var where string
@@ -111,12 +121,19 @@ func createTable(tableValue reflect.Value, tableType reflect.StructField, ver st
 
 	result := reflect.New(tableValue.Type()).Elem()
 	rowItem := reflect.New(tableValue.Type().Elem()).Interface()
+	primaryKeys := make([]uint64, 10)
 	for rows.Next() {
 		err = rows.StructScan(rowItem)
 		if err != nil {
 			return nil, err
 		}
-		result.Set(reflect.Append(result, reflect.ValueOf(rowItem).Elem()))
+		// not include dublicate from view
+		key := reflect.ValueOf(rowItem).Elem().FieldByName(tableType.Tag.Get(tagPrimaryKey))
+		if contains(primaryKeys, key.Uint()) == false {
+			fmt.Println(key)
+			primaryKeys = append(primaryKeys, key.Uint())
+			result.Set(reflect.Append(result, reflect.ValueOf(rowItem).Elem()))
+		}
 	}
 	return result.Interface(), nil
 }
