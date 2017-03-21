@@ -18,29 +18,24 @@ namespace HostelMe
         public MainPageHostelMe()
         {
             InitializeComponent();
+            m_model.init();
+
         }
 
-        private void OnTestClicked(object sender, EventArgs e)
+        private async void OnTestClicked(object sender, EventArgs e)
         {
             Color randomColor = Color.FromRgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
             Button button = (Button)sender;
             button.BackgroundColor = randomColor;
-            Debug.WriteLine("Color: " + randomColor);
+
+            string answer = await App.RestService.GetDataAsync();
+            m_model.update(answer);
         }
 
         protected override async void OnAppearing()
         {
-            base.OnAppearing();
-            string answer = await App.RestService.GetDataAsync();
-            var model = new Model();
-            model.Parse(answer);
-            var path = DependencyService.Get<IFileHelper>().GetLocalFilePath(Constants.DBName);
-            DB.createTable<Hostel>();
-            var res = DB.Insert(model.model.hostels.First());
-            var res1 = DB.InsertAll(model.model.hostels);
-            //var data = DB.Table<Hostel>();
-
-            m_model.update(model);
+            base.OnAppearing();            
+            m_model.update(await App.RestService.GetDataAsync());
         }
 
         public void setModel(Model model) { m_model = model; }

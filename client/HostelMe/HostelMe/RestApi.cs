@@ -14,11 +14,20 @@ namespace HostelMe
     {
         public RestApi(){}
 
+
+
         public async Task<string> GetDataAsync()
-        {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(new Uri(Constants.RestUrl));
+        {           
+            string uriStr = Constants.RestUrl;
+            string version = DB.GetLastDBVersion();
+            if (version != null && version.Length != 0)
+            {
+                uriStr = string.Format("{0}?{1}={2}", uriStr, Constants.Version, version);
+            }
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(new Uri(uriStr));
             request.ContentType = "application/json";
             request.Method = "GET";
+            
 
             try
             {
@@ -29,7 +38,8 @@ namespace HostelMe
                     using (Stream stream = response.GetResponseStream())
                     {
                         StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-                        return reader.ReadToEnd();
+                        string data = reader.ReadToEnd();
+                        return data;
                     }
                 }
             }
