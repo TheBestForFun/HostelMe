@@ -7,15 +7,38 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Xamarin.Forms;
+using System.Threading;
 
 namespace HostelMe
 {
-    public class DB
+    public sealed class DB
     {
-        private static DB instance;
-        private DB() { }
-
         private SQLite.SQLiteConnection connection;
+
+        private static DB m_db = null;
+        private static readonly object s_lock = new object();
+        public static DB db
+        {
+            get
+            {
+                if (m_db != null) return m_db;
+
+                Monitor.Enter(s_lock);
+                DB tmp = new DB();
+                Interlocked.Exchange(ref m_db, tmp);
+                SQLite.SQLiteConnection con = new SQLite.SQLiteConnection(DependencyService.Get<IFileHelper>().GetLocalFilePath(Constants.DBName));
+                createTableIfNotExists<Hostel>(ref con);
+                createTableIfNotExists<Metro>(ref con);
+                createTableIfNotExists<Phone>(ref con);
+                createTableIfNotExists<Hostel2phone>(ref con);
+                createTableIfNotExists<Hostel2metro>(ref con);
+                createTableIfNotExists<Version>(ref con);
+
+                Interlocked.Exchange(ref m_db.connection, con);
+                Monitor.Exit(s_lock);
+                return m_db;
+            }           
+        }
 
         private static void createTableIfNotExists<T>(ref SQLite.SQLiteConnection aConnection)
         {
@@ -27,44 +50,25 @@ namespace HostelMe
             }
         }
 
-        private static DB Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new DB();
-                    instance.connection = new SQLite.SQLiteConnection(DependencyService.Get<IFileHelper>().GetLocalFilePath(Constants.DBName));
-                    createTableIfNotExists<Hostel>(ref instance.connection);
-                    createTableIfNotExists<Metro>(ref instance.connection);
-                    createTableIfNotExists<Phone>(ref instance.connection);
-                    createTableIfNotExists<Hostel2phone>(ref instance.connection);
-                    createTableIfNotExists<Hostel2metro>(ref instance.connection);
-                    createTableIfNotExists<Version>(ref instance.connection);
-                }
-                return instance;
-            }           
-        }
-
-    #region DB API
+        #region DB API
         public static void createTable<T>()
         {
-            Instance.connection.CreateTable<T> ();
+            db.connection.CreateTable<T> ();
         }
 
         public static int InsertAll(IEnumerable objects)
         {
-            return Instance.connection.InsertAll(objects);           
+            return db.connection.InsertAll(objects);           
         }
 
         public static int Insert(object obj)
         {           
-            return Instance.connection.Insert(obj);
+            return db.connection.Insert(obj);
         }
 
         public static int InsertOrReplace(object obj)
         {
-            return Instance.connection.InsertOrReplace(obj);
+            return db.connection.InsertOrReplace(obj);
         }
 
         public static int InsertOrUpdate(IEnumerable objects)
@@ -75,7 +79,7 @@ namespace HostelMe
                 bool inserted = true;
                 try
                 {
-                    Instance.connection.Insert(obj);
+                    db.connection.Insert(obj);
 
                 }
                 catch(Exception ex)
@@ -92,7 +96,7 @@ namespace HostelMe
 
                 try
                 {
-                    Instance.connection.Update(obj);
+                    db.connection.Update(obj);
                 }
                 catch(Exception ex)
                 {
@@ -109,7 +113,7 @@ namespace HostelMe
         {           
             try
             {
-                IList<T> list = new List<T>(Instance.connection.Table<T>());
+                IList<T> list = new List<T>(db.connection.Table<T>());
                 return list;
             }
             catch (Exception ex)
@@ -123,7 +127,7 @@ namespace HostelMe
         #region Utils 
         public static string GetLastDBVersion()
         {
-            var version = instance.connection.Table<Version>().OrderByDescending(t => t.date_update).FirstOrDefault(); 
+            var version = db?.connection?.Table<Version>()?.OrderByDescending(t => t.date_update).FirstOrDefault(); 
             if (version == null)
                 return "";
             return version.db_version;

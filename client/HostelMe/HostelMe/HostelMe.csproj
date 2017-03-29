@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Core.cs" />
     <Compile Include="DB.cs" />
     <Compile Include="IFileHelper.cs" />
     <Compile Include="MainPageHostelMe.xaml.cs">

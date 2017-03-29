@@ -5,27 +5,33 @@ using System.Text;
 using System.Threading;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Maps;
 
 namespace HostelMe
 {
     public class App : Application
-    {
-        public static RestApi RestService { get; private set; }
-        public static Model model = new Model();
-
+    {    
+        public static Core core
+        {
+            get
+            {
+                return Core.Instance;
+            }
+        }
         public App()
         {
             // The root page of your application
             MainPage = new MainPageHostelMe();
+            core.load(this);
+            //await model.updateFromServer();
             //MainPage.setModel(ref model);
-            RestService = new RestApi();
             //while not do, emulation loading content
-         /*   Device.StartTimer(TimeSpan.FromSeconds(10), () =>
-            {
-                MainPage = new MapPage();
-                return false;
-            });*/
 
+        }
+
+        public void setMapPage()
+        {
+            MainPage = new MapPage();
         }
 
         protected override void OnStart()

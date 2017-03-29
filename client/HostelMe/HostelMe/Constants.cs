@@ -15,7 +15,7 @@ namespace HostelMe
 
         //rest api
         public static string Version = "ver";
-        public static string Udid = "udud";
+        public static string Udid = "udid";
         public static string HostelID = "id_hostel";
         public static string Act = "action";
     }

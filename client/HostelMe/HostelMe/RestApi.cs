@@ -10,12 +10,8 @@ using System.Diagnostics;
 
 namespace HostelMe
 {
-    public class RestApi
+    public sealed class RestApi
     {
-        public RestApi(){}
-
-
-
         public async Task<string> GetDataAsync()
         {           
             string uriStr = Constants.RestUrl;

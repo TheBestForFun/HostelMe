@@ -27,15 +27,11 @@ namespace HostelMe
             Color randomColor = Color.FromRgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
             Button button = (Button)sender;
             button.BackgroundColor = randomColor;
-
-            string answer = await App.RestService.GetDataAsync();
-            m_model.update(answer);
         }
 
         protected override async void OnAppearing()
         {
-            base.OnAppearing();            
-            m_model.update(await App.RestService.GetDataAsync());
+            base.OnAppearing();                       
         }
 
         public void setModel(Model model) { m_model = model; }

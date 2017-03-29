@@ -12,7 +12,7 @@ namespace HostelMe
 {
     //http://jsonutils.com/
 
-    public class Hostel
+    public sealed class Hostel
     {       
         public string address { get; set; }
         public string h_date_add { get; set; }

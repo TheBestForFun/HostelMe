@@ -8,8 +8,7 @@
         <maps:Map 
             VerticalOptions="FillAndExpand"
             HorizontalOptions="FillAndExpand"
-            x:Name="HostelMap"
-            IsShowingUser="true"
+            x:Name="HostelMap"            
             MapType="Street"         
         />
     </StackLayout>
