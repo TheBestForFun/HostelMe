@@ -1,15 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Json;
 using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading;
 
 namespace HostelMe
 {
+    internal static class Extensions
+    {
+        internal static async Task<HttpWebResponse> GetResponseAsync(this HttpWebRequest request, int msec)
+        {
+            CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancelTokenSource.Token;
+            using (token.Register(() => request.Abort(), useSynchronizationContext: false))
+            {
+                Task t = new Task(() =>
+                {
+                    Task.Delay(msec);
+                    cancelTokenSource.Cancel();                    
+                });
+                WebResponse response;
+                try
+                {
+                    response = await request.GetResponseAsync().ConfigureAwait(false);
+                    return (HttpWebResponse)response;
+                }
+                catch (Exception ex)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(ex.Message, ex, token);
+                    }
+                    throw; // cancellation hasn't been requested, rethrow the original WebException
+                }
+            }
+        }
+    }
+        
     public sealed class RestApi
     {
         public async Task<string> GetDataAsync()
@@ -23,25 +52,29 @@ namespace HostelMe
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(new Uri(uriStr));
             request.ContentType = "application/json";
             request.Method = "GET";
-            
 
             try
             {
                 // Send the request to the server and wait for the response:
-                using (WebResponse response = await request.GetResponseAsync())
+                using (WebResponse response = await Extensions.GetResponseAsync(request, Constants.RequestDelay))
                 {
                     // Get a stream representation of the HTTP web response:
                     using (Stream stream = response.GetResponseStream())
                     {
                         StreamReader reader = new StreamReader(stream, Encoding.UTF8);
                         string data = reader.ReadToEnd();
+                        Log.log.WriteLine("Request status: DATA loaded");
                         return data;
                     }
                 }
             }
+            catch(OperationCanceledException cancelEx)
+            {
+                Log.log.WriteLine("Request status: aborted after 10 sec\n" + cancelEx.ToString());
+            }
             catch (Exception ex)
             {
-                Debug.WriteLine("Answer: " + ex.ToString());
+                Log.log.WriteLine("Answer: " + ex.ToString());
             }
             return null;
         }

@@ -21,6 +21,7 @@ namespace HostelMe
         public App()
         {
             // The root page of your application
+            Log.log.WriteLine("HostelMe client run");
             MainPage = new MainPageHostelMe();
             core.load(this);
             //await model.updateFromServer();

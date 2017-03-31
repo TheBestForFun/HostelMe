@@ -1,1 +1,5 @@
+Using GoogleMaps
 https://developer.xamarin.com/guides/xamarin-forms/user-interface/map/#Using_Maps
+
+Using Genymotion With Charles Proxy
+http://rexstjohn.com/using-genymotion-charles-proxy/

@@ -57,7 +57,9 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DB.cs" />
+    <Compile Include="HostelInfoPage.cs" />
     <Compile Include="IFileHelper.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="MainPageHostelMe.xaml.cs">
       <DependentUpon>MainPageHostelMe.xaml</DependentUpon>
     </Compile>

@@ -67,10 +67,10 @@ namespace HostelMe
             string data = await restApi?.GetDataAsync();
             await Task.Run(() => model?.update(data));
             DateTime after = DateTime.Now;
-            var diff = 1000 - (after - before).Milliseconds;
+            var diff = Constants.RequestDelay - (after - before).Milliseconds;
             if (diff > 0)
                 await Task.Delay(diff);
-            Debug.WriteLine("\n***\nall load\n***");
+            Log.log.WriteLine("all load");
             app.setMapPage();
         }
     }

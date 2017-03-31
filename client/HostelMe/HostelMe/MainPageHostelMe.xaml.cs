@@ -29,11 +29,6 @@ namespace HostelMe
             button.BackgroundColor = randomColor;
         }
 
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();                       
-        }
-
         public void setModel(Model model) { m_model = model; }
     }
 }

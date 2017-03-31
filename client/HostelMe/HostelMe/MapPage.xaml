@@ -4,13 +4,32 @@
              xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
              x:Class="HostelMe.MapPage">
     <StackLayout VerticalOptions="FillAndExpand"
-                 HorizontalOptions="FillAndExpand">
+                 HorizontalOptions="FillAndExpand"
+                 >
         <maps:Map 
             VerticalOptions="FillAndExpand"
             HorizontalOptions="FillAndExpand"
             x:Name="HostelMap"            
             MapType="Street"         
         />
+
+            <Grid>
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="onHostelInfoClicked"/>
+
+                </Grid.GestureRecognizers>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label x:Name="hostelName" Text="Test"              HorizontalOptions="Center"
+             VerticalOptions="CenterAndExpand"  Grid.Row="0" Grid.Column="0" TextColor="#77d065" FontSize = "20"/>
+                <Label x:Name="hostelAddress" VerticalTextAlignment="Center" Grid.Row="1" Grid.Column="0" TextColor="#77d065" FontSize = "10"/>
+            </Grid>
     </StackLayout>
 <!--
   <ContentPage.Content>
