@@ -14,7 +14,7 @@ namespace HostelMe
         public MapPage()
         {
             InitializeComponent();
-            var mapPosition = new Position(59.93, 30.31);
+            var mapPosition = new Position(59.93, 30.31); // center of Petersburg
             HostelMap.MoveToRegion(MapSpan.FromCenterAndRadius(mapPosition, Distance.FromMiles(1)));
         }
 

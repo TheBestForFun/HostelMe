@@ -19,6 +19,6 @@ namespace HostelMe
         public static string HostelID = "id_hostel";
         public static string Act = "action";
 
-        public static int RequestDelay = 1000;
+        public static int RequestDelay = 10000;
     }
 }

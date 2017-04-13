@@ -16,11 +16,11 @@ namespace HostelMe
             CancellationToken token = cancelTokenSource.Token;
             using (token.Register(() => request.Abort(), useSynchronizationContext: false))
             {
-                Task t = new Task(() =>
+                new Task(() =>
                 {
-                    Task.Delay(msec);
-                    cancelTokenSource.Cancel();                    
-                });
+                    Task.Delay(msec).ContinueWith(_ => cancelTokenSource.Cancel());                    
+                }).Start();
+
                 WebResponse response;
                 try
                 {
