@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage
+    x:Class="HostelMe.MainPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:HostelMe;assembly=HostelMe"
+    Title="HostelMe.TabbedPage">
+    <!--  Pages can be added as references or inline  -->
+    <TabbedPage.Children>
+        <pages:MapPage />
+        <pages:MetroPage />
+        <pages:FindPage />
+    </TabbedPage.Children>
+</TabbedPage>

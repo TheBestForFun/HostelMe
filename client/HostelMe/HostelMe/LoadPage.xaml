@@ -1,12 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"           
-             x:Class="HostelMe.MainPageHostelMe"            
+             x:Class="HostelMe.LoadPage"            
              BackgroundImage="@drawable/hostelme.png">
     <StackLayout Orientation="Vertical">
-        <Button Text="test" FontSize="Medium" BorderWidth="1" HorizontalOptions="Center" VerticalOptions="Center" Clicked="OnTestClicked"/>
         <Label x:Name="restStr" Text="Loading..." VerticalOptions="Center" HorizontalOptions="Center" />
-    
-    
-        </StackLayout>
+    </StackLayout>
 </ContentPage>

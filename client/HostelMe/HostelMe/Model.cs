@@ -73,6 +73,27 @@ namespace HostelMe
         public IList<Hostel2metro> hostel2metros { get; set; }
         public IList<Hostel2phone> hostel2phones { get; set; }
         public IList<Version> versions { get; set; }
+
+        public Hostel GetHostel(int id)
+        {
+            return hostels.Where(h => h.id_hostel == id)?.First();            
+        }
+
+        public string GetPhone(int id)
+        {
+            return phones.Where(p => p.id_phone == id)?.First().phone;
+        }
+
+        public string GetPhoneByHostelId(int id)
+        {
+            List<string> result = new List<string>();
+            var records = hostel2phones.Where(r => r.id_hostel == id);
+            foreach(var rec in records)
+            {
+                result.Add(GetPhone(rec.id_phone));
+            }
+            return String.Join("\n", result.ToArray());
+        }
     }    
 
     public class Model

@@ -22,7 +22,7 @@ namespace HostelMe
         {
             // The root page of your application
             Log.log.WriteLine("HostelMe client run");
-            MainPage = new MainPageHostelMe();
+            MainPage = new LoadPage();
             core.load(this);
             //await model.updateFromServer();
             //MainPage.setModel(ref model);
@@ -32,7 +32,8 @@ namespace HostelMe
 
         public void setMapPage()
         {
-            MainPage = new MapPage();
+            MainPage = new NavigationPage(new MainPage());
+            NavigationPage.SetHasNavigationBar(MainPage, false);
         }
 
         protected override void OnStart()

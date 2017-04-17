@@ -18,7 +18,8 @@ namespace HostelMe
             {
                 new Task(() =>
                 {
-                    Task.Delay(msec).ContinueWith(_ => cancelTokenSource.Cancel());                    
+                    Task.Delay(msec).ContinueWith(_ => 
+                    cancelTokenSource.Cancel());                    
                 }).Start();
 
                 WebResponse response;

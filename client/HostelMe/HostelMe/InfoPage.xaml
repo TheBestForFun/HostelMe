@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HostelMe.InfoPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Hostel details">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Label
+            Grid.Column="0"
+            HorizontalTextAlignment="End"
+            Text="Hostel:" />
+        <Label
+            x:Name="Name"
+            Grid.Column="1"
+            FontAttributes="Bold"
+            Text="" />
+        <Label
+            Grid.Row="1"
+            Grid.Column="0"
+            HorizontalTextAlignment="End"
+            Text="Address:" />
+        <Label
+            x:Name="Address"
+            Grid.Row="1"
+            Grid.Column="1"
+            FontAttributes="Bold"
+            Text="" />
+        <Label
+            Grid.Row="2"
+            Grid.Column="0"
+            HorizontalTextAlignment="End"
+            Text="Phone:" />
+        <Label
+            x:Name="Phone"
+            Grid.Row="2"
+            Grid.Column="1"
+            FontAttributes="Bold"
+            Text="" />
+    </Grid>
+</ContentPage>

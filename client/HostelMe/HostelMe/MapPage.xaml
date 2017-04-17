@@ -1,46 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
-             x:Class="HostelMe.MapPage">
-    <StackLayout VerticalOptions="FillAndExpand"
-                 HorizontalOptions="FillAndExpand"
-                 >
-        <maps:Map 
-            VerticalOptions="FillAndExpand"
+<ContentPage
+    x:Class="HostelMe.MapPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
+    Title="By map">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <maps:Map
+            x:Name="HostelMap"
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             HorizontalOptions="FillAndExpand"
-            x:Name="HostelMap"            
-            MapType="Street"         
-        />
+            IsShowingUser="true"
+            MapType="Street"
+            VerticalOptions="FillAndExpand" />
+        <SearchBar
+            x:Name="search"
+            Grid.Row="1"
+            Grid.Column="0"
+            Placeholder="Search"
+            SearchCommandParameter="{Binding Text, Source={x:Reference search}}" />
+        <Button
+            x:Name="Menu"
+            Grid.Row="1"
+            Grid.Column="1"
+            HeightRequest="25"
+            Image="icon.png" />
+    </Grid>
 
-            <Grid>
-                <Grid.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="onHostelInfoClicked"/>
+    <!--<RelativeLayout>
+        <StackLayout
+            HorizontalOptions="FillAndExpand"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent,
+                                                                   Property=Height,
+                                                                   Factor=1,
+                                                                   Constant=0}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent,
+                                                                  Property=Width,
+                                                                  Factor=1,
+                                                                  Constant=0}"
+            VerticalOptions="FillAndExpand">
+            <maps:Map
+                x:Name="HostelMap"
+                HorizontalOptions="FillAndExpand"
+                IsShowingUser="true"
+                MapType="Street"
+                VerticalOptions="FillAndExpand" />
 
-                </Grid.GestureRecognizers>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Label x:Name="hostelName" Text="Test"              HorizontalOptions="Center"
-             VerticalOptions="CenterAndExpand"  Grid.Row="0" Grid.Column="0" TextColor="#77d065" FontSize = "20"/>
-                <Label x:Name="hostelAddress" VerticalTextAlignment="Center" Grid.Row="1" Grid.Column="0" TextColor="#77d065" FontSize = "10"/>
-            </Grid>
-    </StackLayout>
-<!--
-  <ContentPage.Content>
-    <StackLayout  HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Spacing="25" Padding="0" x:Name="stackLayoutMain">
-
-      <Entry Placeholder="Activation Key" WidthRequest="200" FontSize="15" HorizontalOptions="Center" VerticalOptions="StartAndExpand" x:Name="entryActivationKey" Keyboard="Numeric" HorizontalTextAlignment="Center"></Entry>
-      <Button
-        x:Name="buttonActivate"
-        Text="Activate"    >
-      </Button>
-    </StackLayout>
-  </ContentPage.Content>
--->
+        </StackLayout>
+    </RelativeLayout>-->
 </ContentPage>
