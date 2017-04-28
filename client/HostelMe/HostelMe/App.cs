@@ -32,8 +32,7 @@ namespace HostelMe
 
         public void setMapPage()
         {
-            MainPage = new NavigationPage(new MainPage());
-            NavigationPage.SetHasNavigationBar(MainPage, false);
+            MainPage = new HostelMe.MainPage();            
         }
 
         protected override void OnStart()

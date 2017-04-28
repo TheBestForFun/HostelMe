@@ -13,11 +13,13 @@ namespace HostelMe
     public partial class MapPage : ContentPage
     {
         Dictionary<Pin, int> pinIdMap = new Dictionary<Pin, int>();
+
+        public static Position center = new Position(59.93, 30.31); // center of Petersburg      
+
         public MapPage()
-        {            
+        {
+            NavigationPage.SetHasNavigationBar(this, false);
             InitializeComponent();
-            var mapPosition = new Position(59.93, 30.31); // center of Petersburg
-            HostelMap.MoveToRegion(MapSpan.FromCenterAndRadius(mapPosition, Distance.FromMiles(1)));
 
             foreach (var hostel in Core.model.m_model.hostels)
             {
@@ -29,22 +31,48 @@ namespace HostelMe
                     Address = hostel.address
                 };
                 pin.Clicked += onPinClicked;
-                HostelMap.Pins.Add(pin);
                 pinIdMap.Add(pin, hostel.id_hostel);
             }
         }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            center = getMapCenter();
+            var map = layoutMap.Children.First() as Map;
+            layoutMap.Children.Remove(map);            
+        }
+
         protected override void OnAppearing()
         {
-            base.OnAppearing();         
+            base.OnAppearing();
+            addMap();
         }
 
-        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void addMap()
+        {   // dynamic add map and remove to show in other pages
+            // now its not work correctly
+            var map = new Map(MapSpan.FromCenterAndRadius(center, Distance.FromMiles(1)));
+
+            foreach(Pin pin in pinIdMap.Keys)
+            {
+                map.Pins.Add(pin);
+            }
+
+            map.IsShowingUser = true;
+            map.MapType = MapType.Street;
+            map.HorizontalOptions = LayoutOptions.FillAndExpand;
+            map.VerticalOptions = LayoutOptions.FillAndExpand;
+
+            layoutMap.Children.Add(map);
+        }
+
+        private Position getMapCenter()
         {
-            base.OnPropertyChanged(propertyName);
-
+            var map = layoutMap.Children.First() as Map;
+            return map.VisibleRegion.Center;
         }
-
+        
         private async void onPinClicked(object sender, EventArgs args)
         {
             if (sender is Pin)

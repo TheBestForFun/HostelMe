@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="HostelMe.LoadPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundImage="@drawable/hostelme.png">
+    <StackLayout Orientation="Vertical">
+        <Label
+            x:Name="restStr"
+            HorizontalOptions="Center"
+            Text="Loading..."
+            VerticalOptions="Center" />
+    </StackLayout>
+</ContentPage>
